@@ -53,7 +53,7 @@ apple-photos-large-file-finder/
 Clone the repository:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/apple-photos-large-file-finder.git
+git clone https://github.com/dekuan/py-apple-photos-large-file-finder.git
 cd apple-photos-large-file-finder
 ```
 
