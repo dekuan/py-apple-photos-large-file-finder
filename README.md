@@ -1,40 +1,54 @@
 # Apple Photos Large File Finder
 
-Find and manage large files inside the Apple Photos app on macOS. This project provides two main functionalities:
+Find and manage large files inside the Apple Photos app on macOS.
 
-1. **Tagging large files into a dedicated album**
-2. **Exporting large file metadata to a CSV file**
+> Supports iCloud Photos and **Optimize Mac Storage**.
 
-Unlike traditional disk scanners, this project uses Apple's official **PhotoKit** framework to read metadata directly from the Photos library database instead of enumerating local files. This ensures compatibility with iCloud-only assets and libraries using **Optimize Mac Storage**.
+Unlike traditional disk scanners, this project uses Apple's official **PhotoKit** framework to read metadata directly from the Photos library database instead of enumerating local files. This allows the tool to correctly analyze assets even when originals exist only in iCloud.
+
+---
+
+## Screenshot
+
+### Automatically tag the largest assets into a dedicated album
+
+![LargeFileFinder Album](images/photos-large_file_finder.png)
+
+The `LargeFileFinder` album is automatically populated with the largest assets detected in your Apple Photos library.
 
 ---
 
 ## Project Structure
 
-```
-apple-photos-large-file-finder/
+```text
+py-apple-photos-large-file-finder/
+├── images/
+│   ├── photos-large_file_finder.png
+│   ├── privacy-security-photos.png
+│   └── privacy-security-photos-terminal.png
+│
 ├── src/
-│   ├── large_files_tag_to_album.py       # Tag top large files into the 'LargeFileFinder' album
-│   └── large_files_export_to_csv.py      # Export top large files metadata to CSV
+│   ├── large_files_tag_to_album.py
+│   └── large_files_export_to_csv.py
+│
 ├── README.md
 └── LICENSE
 ```
-
-> Both scripts operate independently. You can run either one depending on your workflow.
 
 ---
 
 ## Features
 
-- Analyze assets directly from the macOS Photos app
+- Analyze assets directly from the Apple Photos app
 - Works with iCloud Photos
 - Compatible with **Optimize Mac Storage**
 - Detect large photos and videos
-- Two distinct workflows:
-  - Tag top large files into a dedicated album (`LargeFileFinder`)
-  - Export top large files metadata to CSV (`largest_photos.csv`)
+- Automatically tag large assets into a dedicated album
+- Export large asset metadata to CSV
 - Supports Live Photos, RAW, HEIF, videos, and edited assets
-- No direct filesystem scanning required
+- No filesystem scanning required
+- Avoids duplicate album tagging
+- Works with extremely large Photos libraries
 
 ---
 
@@ -54,6 +68,7 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/dekuan/py-apple-photos-large-file-finder.git
+
 cd py-apple-photos-large-file-finder
 ```
 
@@ -71,34 +86,77 @@ python3 -m pip install pyobjc-framework-Photos pyobjc-framework-Cocoa
 
 ---
 
-## macOS Permissions
+# macOS Permissions
 
 macOS requires explicit permission to access the Photos library. Without it, scripts may return zero assets.
 
-1. Open **System Settings → Privacy & Security → Photos**
-2. Allow access for your terminal or IDE (Terminal, iTerm2, VS Code, etc.)
-3. Ensure your Photos library is the **System Photo Library**:
-   - Open Photos app → Settings → General → "Use as System Photo Library"
+---
+
+## Step 1 — Open Photos permissions
+
+Open:
+
+```text
+System Settings → Privacy & Security → Photos
+```
+
+![Photos Permission Settings](images/privacy-security-photos.png)
+
+---
+
+## Step 2 — Grant Full Access to Terminal or your IDE
+
+Enable access for your terminal or IDE:
+
+- Terminal
+- iTerm2
+- VS Code
+- PyCharm
+- etc.
+
+![Terminal Full Access](images/privacy-security-photos-terminal.png)
+
+---
+
+## Step 3 — Ensure the Photos library is the System Photo Library
+
+Open:
+
+```text
+Photos app → Settings → General → Use as System Photo Library
+```
 
 > ⚠️ Without Full Photos access, tagging or exporting assets may fail.
 
 ---
 
-## Scripts & Usage
+# Scripts & Usage
 
-### 1️⃣ Tag top large files into a dedicated album
+## 1️⃣ Tag top large files into a dedicated album
 
-**File:** `src/large_files_tag_to_album.py`
+**File:**
 
-Finds the top 1000 largest assets in your Photos library and tags them into a dedicated album called `LargeFileFinder`. Already tagged assets are skipped to avoid duplicates.
+```text
+src/large_files_tag_to_album.py
+```
+
+Finds the top 1000 largest assets in your Photos library and tags them into a dedicated album called `LargeFileFinder`.
+
+Already tagged assets are automatically skipped to avoid duplicates.
+
+---
+
+### Run
 
 ```bash
 python3 src/large_files_tag_to_album.py
 ```
 
-**Actual example output:**
+---
 
-```
+### Actual example output
+
+```text
 Reading Photos assets...
 Found 168303 assets in the Photos library.
 Processed 1000/168303 assets...
@@ -123,19 +181,33 @@ Done.
 
 ---
 
-### 2️⃣ Export top large files metadata to CSV
+## 2️⃣ Export top large files metadata to CSV
 
-**File:** `src/large_files_export_to_csv.py`
+**File:**
 
-Finds the top 1000 largest assets in your Photos library and exports their metadata to a CSV file called `largest_photos.csv`.
+```text
+src/large_files_export_to_csv.py
+```
+
+Finds the top 1000 largest assets in your Photos library and exports their metadata to a CSV file called:
+
+```text
+largest_photos.csv
+```
+
+---
+
+### Run
 
 ```bash
 python3 src/large_files_export_to_csv.py
 ```
 
-**Actual example output:**
+---
 
-```
+### Actual example output
+
+```text
 Reading Photos assets...
 Found 168303 assets in the Photos library.
 Processed 1000/168303 assets...
@@ -159,7 +231,9 @@ Done!
 CSV file created: largest_photos.csv
 ```
 
-**CSV columns include:**
+---
+
+### CSV columns
 
 | Field      | Description               |
 | ---------- | ------------------------- |
@@ -184,17 +258,22 @@ python3 src/large_files_tag_to_album.py
 python3 src/large_files_export_to_csv.py
 ```
 
-> ✅ Both scripts process the top 1000 largest assets by default. You can adjust the `LIMIT` constant in each script if needed.
+> Both scripts process the top 1000 largest assets by default. You can adjust the `LIMIT` constant in each script if needed.
 
 ---
 
 ## Technical Notes
 
-- Uses **PhotoKit** (`PHAsset` and `PHAssetResource`) via PyObjC bridge
-- File sizes are obtained using `resource.valueForKey_("fileSize")`
-  - Apple does not provide a public API for asset file size, especially for iCloud-only assets
-  - This KVC-based method is widely used and works reliably on modern macOS
-- Top 1000 largest assets are used by default; scripts are configurable
+- Uses **PhotoKit** (`PHAsset` and `PHAssetResource`) via the PyObjC bridge
+- File sizes are retrieved using:
+
+```python
+resource.valueForKey_("fileSize")
+```
+
+Apple does not provide a public API for retrieving asset file sizes, especially for iCloud-managed assets.
+
+This KVC-based approach is widely used by macOS developers and works reliably on modern macOS versions.
 
 ---
 
@@ -209,11 +288,13 @@ python3 src/large_files_export_to_csv.py
 
 ## Future Plans
 
-- GUI interface for selecting and tagging assets
-- Duplicate photo detection
-- Live Photo and HEIF/RAW analysis
-- Smart filtering and advanced reporting
-- Storage heatmaps for the Photos library
+- Native macOS GUI application
+- Duplicate asset detection
+- Live Photo analysis
+- HEIF / RAW analysis
+- Advanced filtering
+- Storage visualization
+- Smart cleanup workflows
 
 ---
 
@@ -228,3 +309,7 @@ MIT License
 This project is not affiliated with Apple Inc.
 
 Apple Photos, PhotoKit, macOS, and iCloud are trademarks of Apple Inc.
+
+```
+
+```
